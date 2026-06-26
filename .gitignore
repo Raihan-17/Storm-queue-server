@@ -1,1 +1,13 @@
-.env
+.env  
+node_modules  
+dist  
+*.log  
+*.pid  
+*.seed  
+*.pid.lock  
+*.env.local  
+*.env.*.local  
+.DS_Store  
+coverage  
+*.lcov  
+.vscode/
