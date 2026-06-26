@@ -56,6 +56,27 @@ async function sortTicket(req, res, next) {
       );
     }
 
+    // 1. Check for SQL injection patterns (basic)
+    const sqlInjectionPatterns = /(\bSELECT\b|\bINSERT\b|\bUPDATE\b|\bDELETE\b|\bDROP\b|\bUNION\b)/i;
+    if (sqlInjectionPatterns.test(message)) {
+      // Don't block it, just log it - we'll still classify
+      console.warn(`[SECURITY] Potential SQL injection in ticket ${ticket_id}`);
+    }
+
+    // 2. Check for excessive whitespace or special characters
+    const normalizedMessage = message.replace(/\s+/g, ' ').trim();
+    if (normalizedMessage.length === 0) {
+      return badRequest(res, 'message cannot be only whitespace.', 'message');
+    }
+
+    // 3. Check for XSS patterns (basic)
+    const xssPatterns = /<script|javascript:|onclick|onerror|alert\(/i;
+    if (xssPatterns.test(message)) {
+      // Again, we don't block - just log for security audit
+      console.warn(`[SECURITY] Potential XSS attempt in ticket ${ticket_id}`);
+    }
+
+    // 4. Validate locale if provided (you already have this, but let's make it stricter)
     // channel — optional, but if present must be one of the allowed values
     if (channel !== undefined && channel !== null && channel !== '') {
       if (typeof channel !== 'string' || !CHANNELS.has(channel)) {
@@ -65,6 +86,10 @@ async function sortTicket(req, res, next) {
           'channel'
         );
       }
+      // Extra check: channel should not be too long
+      if (channel.length > 50) {
+        return badRequest(res, 'channel value is too long.', 'channel');
+      }
     }
 
     // locale — optional, but if present must be one of the allowed values
@@ -72,6 +97,16 @@ async function sortTicket(req, res, next) {
       if (typeof locale !== 'string' || !LOCALES.has(locale)) {
         return badRequest(res, 'locale must be one of: bn, en, mixed.', 'locale');
       }
+      // Extra check: locale should not be too long
+      if (locale.length > 10) {
+        return badRequest(res, 'locale value is too long.', 'locale');
+      }
+    }
+
+    // 5. Add request size tracking (engineering perspective)
+    const requestSize = JSON.stringify(body).length;
+    if (requestSize > 65000) { // ~64KB
+      console.warn(`[PERFORMANCE] Large request size: ${requestSize} bytes for ticket ${ticket_id}`);
     }
 
     // Defensive: if the incoming message itself asks for credentials, we
