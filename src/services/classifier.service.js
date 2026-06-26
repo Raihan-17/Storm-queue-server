@@ -479,7 +479,9 @@ function classify({ message }) {
   const agent_summary = sanitizeSummary(rawSummary);
 
   const human_review_required =
-    severity === 'critical' || case_type === CASE_TYPE.PHISHING;
+    severity === 'critical' ||
+    severity === 'high' ||
+    case_type === CASE_TYPE.PHISHING;
 
   return {
     case_type,

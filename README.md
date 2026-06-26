@@ -59,9 +59,9 @@ LLM, no GPU, no secrets in the repo. Latency on a cold start is well under
 }
 ```
 
-`human_review_required` is `true` whenever `severity === "critical"` **or**
-`case_type === "phishing_or_social_engineering"`. The `_meta` block is for
-observability and is safe to ignore.
+`human_review_required` is `true` whenever `severity` is `high` or
+`critical`, **or** `case_type === "phishing_or_social_engineering"`. The
+`_meta` block is for observability and is safe to ignore.
 
 ### Errors
 
@@ -218,15 +218,15 @@ The server listens on `PORT` (default `3000`).
 
 ```bash
 # Health
-curl -s http://localhost:3000/health
+curl -s https://storm-queue-server.onrender.com/health
 
 # Wrong transfer
-curl -s -X POST http://localhost:3000/sort-ticket \
+curl -s -X POST https://storm-queue-server.onrender.com/sort-ticket \
   -H 'Content-Type: application/json' \
   -d '{"ticket_id":"T-001","message":"I sent 5000 taka to a wrong number this morning, please help me get it back"}'
 
 # Phishing
-curl -s -X POST http://localhost:3000/sort-ticket \
+curl -s -X POST https://storm-queue-server.onrender.com/sort-ticket \
   -H 'Content-Type: application/json' \
   -d '{"ticket_id":"T-003","message":"Someone called asking my OTP, is that bKash?"}'
 ```
